@@ -5,6 +5,7 @@
 
 pragma solidity ^0.4.20;
 //接口文档 https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
+//安全的erc20:https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC20/SafeERC20.sol
 contract ERC20Interface{
 //代币名称(可选)
     function name()public view returns (string);
@@ -111,6 +112,7 @@ contract Token is ERC20Interface,Owner,Burn {
         //文档: http://solidity-cn.readthedocs.io/zh/develop/units-and-global-variables.html
         // block(区块对象) msg(消息对象) now(当前块的时间戳) tx(当前交易的对象)
         require(msg.value>0);
+        //进行数学运算时推荐使用safemath: https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/math/SafeMath.sol 
         require(msg.value+m_money>m_money);
         m_money += msg.value;
         m_balances[msg.sender] += msg.value;

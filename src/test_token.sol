@@ -8,7 +8,7 @@ pragma solidity ^0.4.20;
 //安全的erc20:https://github.com/OpenZeppelin/openzeppelin-solidity/blob/master/contracts/token/ERC20/SafeERC20.sol
 contract ERC20Interface{
 //代币名称(可选)
-    function name()public view returns (string);
+    function name()public view returns (string); 
 //代币符号(可选)
     function symbol() public view returns (string);
 //代币精度(可选)
@@ -29,7 +29,7 @@ contract ERC20Interface{
 
 //以及2个事件
 
-//交易的时候必须发射这个时间
+//交易的时候必须发射这个事件
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
 //转移代币的时候必须发射这个事件
     event Approval(address indexed _owner, address indexed _spender, uint256 _value);
@@ -45,6 +45,11 @@ contract Owner{
     }
     constructor() public{ owner = msg.sender; }
 }
+//用于
+contract BanInterface{
+    function isBanInterface()public pure returns(bool);
+    function ban()public;
+}
 interface Burn{
     function burn(uint256)external;
 }
@@ -59,6 +64,7 @@ contract Token is ERC20Interface,Owner,Burn {
     uint8 m_decimals;
     uint256 m_totalSupply;
 
+    BanInterface internal m_banMod;
     //bool 类型
     bool m_isStop=false;
 
@@ -87,11 +93,23 @@ contract Token is ERC20Interface,Owner,Burn {
         //仅仅只能做一些日志操作
         //eth的DAO事件与这个函数相关
         //DAO事件模拟重现: https://blog.csdn.net/u011721501/article/details/79450122
+        //使用 msg.sender.send(uint)发送以太 而不是 msg.sender.call.value(uint)()
     }
 
     //onlyOwner modifier的作用
     function close()public onlyOwner{
         selfdestruct(owner);
+    }
+
+    function setBanMod(address _address) external onlyOwner {
+        var banInterface = BanInterface(_address);
+        require(banInterface.isBanInterface());
+        m_banMod = banInterface;
+    }
+
+    function ban()public{
+        require(m_banMod!=address(0x0));
+        m_banMod.ban();
     }
 
     //实现接口
